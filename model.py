@@ -23,6 +23,7 @@ n_classes = 2
 num_batches = 47
 display_step = 1
 test_batches = 4
+save = False
 
 # Placeholders
 x = tf.placeholder(shape=[None, 2, 51], dtype=tf.float32)
@@ -70,7 +71,7 @@ init = tf.global_variables_initializer()
 with tf.Session() as sess:
 	print('\nRunning Session')
 	init.run()
-	os.chdir('/media/jr/Linux/Skripte/Enzyme-Kinetics/DaPrePro/Batches')
+	os.chdir(input( 'Enter path to batch files: ' ))
 
 	for epoch in range(epochs):
 		used = []
@@ -88,14 +89,18 @@ with tf.Session() as sess:
 	print('\nOptimization Finished!\n')
 
 	# Save model
-	saver = tf.train.Saver()
-	save_path = saver.save(sess, "/media/jr/Linux/Skripte/Enzyme-Kinetics/Model_Saves/model.ckpt")
-	print("Model saved in file: %s\n" % save_path)
+	if save:
+		saver = tf.train.Saver()
+		save_path = saver.save(sess, "%smodel.ckpt" % input('Enter path to save folder: ')
+		print("Model saved in file: %s\n" % save_path)
 
 	# Test model
-	os.chdir('/media/jr/Linux/Skripte/Enzyme-Kinetics/DaPrePro/Batches/Test_Set')
+	os.chdir('Enter path to test-batch files: ')
+	
 	print('Testing model\n')
+	
 	false, true = 0, 0
+	
 	for i in range(1,test_batches+1,1):
 		print('     ', 'Test-Batch', i)
 		test_batch_data = np.load('Test_Batch_%i_Data.npy' % i)
@@ -114,4 +119,4 @@ with tf.Session() as sess:
 	print('\nAccuracy:', true/(true+false), 'Failure:', false/(true+false))
 
 	with open('Accuracy_Log.txt', "w") as file:
-		file.write('Accuracy: %f' %f true/(true+false))
+		file.write('Accuracy: %f' % true/(true+false))
