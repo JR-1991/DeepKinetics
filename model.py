@@ -23,9 +23,12 @@ n_classes = 2
 num_batches = 47
 display_step = 1
 test_batches = 4
-save = False
 
-# Placeholders 
+# Status of script
+training = False
+restoring = True
+
+# Placeholders
 x = tf.placeholder(shape=[None, 2, 51], dtype=tf.float32)
 y_true = tf.placeholder(shape=[None,2], dtype=tf.float32)
 
@@ -71,36 +74,38 @@ init = tf.global_variables_initializer()
 with tf.Session() as sess:
 	print('\nRunning Session')
 	init.run()
-	os.chdir(input( 'Enter path to batch files: ' ))
+	os.chdir('/media/jr/Linux/Skripte/Enzyme-Kinetics/DaPrePro/Batches')
 
-	for epoch in range(epochs):
-		used = []
-		print("\n")
-		for i in range(num_batches):
-			batch_data = np.load('Batch_%i_Data.npy' % i)
-			batch_classes = np.load('Batch_%i_Classes.npy' % i)
-			# Run optimization op (backprop)  and cost op
-			_, c = sess.run([training_op,cost], feed_dict={x: batch_data, y_true: batch_classes})
-			# Display logs per epoch step
-			if epoch % display_step == 0:
-				print('     ','Epoch:', '%04d' % (epoch+1),
-						'cost=' '{:.9f}'.format(c))
+	if training:
+		for epoch in range(epochs):
+			used = []
+			print("\n")
+			for i in range(num_batches):
+				batch_data = np.load('Batch_%i_Data.npy' % i)
+				batch_classes = np.load('Batch_%i_Classes.npy' % i)
+				# Run optimization op (backprop)  and cost op
+				_, c = sess.run([training_op,cost], feed_dict={x: batch_data, y_true: batch_classes})
+				# Display logs per epoch step
+				if epoch % display_step == 0:
+					print('     ','Epoch:', '%04d' % (epoch+1),
+							'cost=' '{:.9f}'.format(c))
 
-	print('\nOptimization Finished!\n')
+		print('\nOptimization Finished!\n')
 
-	# Save model
-	if save:
+		# Save model
 		saver = tf.train.Saver()
-		save_path = saver.save(sess, "%smodel.ckpt" % input('Enter path to save folder: ')
+		save_path = saver.save(sess, "/media/jr/Linux/Skripte/Enzyme-Kinetics/Model_Saves/model.ckpt")
 		print("Model saved in file: %s\n" % save_path)
 
+	elif restoring:
+		saver = tf.train.Saver()
+		saver.restore(sess, '/media/jr/Linux/Skripte/Enzyme-Kinetics/Model_Saves/model.ckpt')
+
 	# Test model
-	os.chdir('Enter path to test-batch files: ')
-	
+	os.chdir('/media/jr/Linux/Skripte/Enzyme-Kinetics/DaPrePro/Batches/Test_Set')
 	print('Testing model\n')
-	
 	false, true = 0, 0
-	
+	false_instances, true_classes = [], []
 	for i in range(1,test_batches+1,1):
 		print('     ', 'Test-Batch', i)
 		test_batch_data = np.load('Test_Batch_%i_Data.npy' % i)
@@ -115,8 +120,17 @@ with tf.Session() as sess:
 				true += 1
 			elif pred_class != true_class:
 				false += 1
+				false_instances.append(instance)
+				true_classes.append(true_class)
+
 
 	print('\nAccuracy:', true/(true+false), 'Failure:', false/(true+false))
 
+	np.save('False_classified_parameters.npy',np.array(false_instances))
+	save_file = open('False_classified_true classes.txt', "w")
+
+	for inst in true_classes:
+		save_file.write('%s\n' % inst)
+
 	with open('Accuracy_Log.txt', "w") as file:
-		file.write('Accuracy: %f' % true/(true+false))
+		file.write('Accuracy: %f' % (true/(true+false)))
