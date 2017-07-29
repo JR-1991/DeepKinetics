@@ -25,7 +25,7 @@ display_step = 1
 test_batches = 4
 save = False
 
-# Placeholders
+# Placeholders 
 x = tf.placeholder(shape=[None, 2, 51], dtype=tf.float32)
 y_true = tf.placeholder(shape=[None,2], dtype=tf.float32)
 
