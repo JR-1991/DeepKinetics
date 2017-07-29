@@ -1,3 +1,4 @@
 Batches are tensors in Numpy-format.
 
-Shape: [Batch-Size, Concentrations, Time]
+Shape_Data: [Batch-Size, Concentrations, Time]
+Shape_Classes: [Batch-Size, Classes]
