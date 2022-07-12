@@ -6,10 +6,8 @@ import glob
 # Retrieve class name
 def get_name(arr):
 	mm = 'MM'
-	mm_inh = 'MM Inh'
-
 	if np.argmax(arr) == 0:
-		return mm_inh
+		return 'MM Inh'
 	elif np.argmax(arr) == 1:
 		return mm
 
@@ -56,9 +54,7 @@ def mlp_classification(rnn_out):
 		b_2 = tf.get_variable('b_2', [n_classes], dtype=tf.float32)
 		# Feed forward
 		layer_1 = tf.nn.relu( tf.matmul(rnn_out, w_1) + b_1)
-		layer_2 = tf.matmul(layer_1, w_2) + b_2
-
-		return layer_2
+		return tf.matmul(layer_1, w_2) + b_2
 
 # Evaluate model
 out, state = recurrent_net(x)
@@ -77,8 +73,8 @@ with tf.Session() as sess:
 	os.chdir('/media/jr/Linux/Skripte/Enzyme-Kinetics/DaPrePro/Batches')
 
 	if training:
+		used = []
 		for epoch in range(epochs):
-			used = []
 			print("\n")
 			for i in range(num_batches):
 				batch_data = np.load('Batch_%i_Data.npy' % i)
@@ -106,7 +102,7 @@ with tf.Session() as sess:
 	print('Testing model\n')
 	false, true = 0, 0
 	false_instances, true_classes = [], []
-	for i in range(1,test_batches+1,1):
+	for i in range(1, test_batches+1):
 		print('     ', 'Test-Batch', i)
 		test_batch_data = np.load('Test_Batch_%i_Data.npy' % i)
 		test_batch_classes = np.load('Test_Batch_%i_Classes.npy' % i)
@@ -118,7 +114,7 @@ with tf.Session() as sess:
 
 			if pred_class == true_class:
 				true += 1
-			elif pred_class != true_class:
+			else:
 				false += 1
 				false_instances.append(instance)
 				true_classes.append(true_class)
